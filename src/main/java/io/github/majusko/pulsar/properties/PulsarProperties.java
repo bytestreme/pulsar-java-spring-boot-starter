@@ -16,6 +16,7 @@ public class PulsarProperties {
     private String consumerNameDelimiter = "";
     private String namespace = "default";
     private String tenant = "public";
+    private String authentication = null;
 
     public String getServiceUrl() {
         return serviceUrl;
@@ -111,5 +112,13 @@ public class PulsarProperties {
 
     public void setTenant(String tenant) {
         this.tenant = tenant;
+    }
+
+    public String getAuthentication() {
+        return authentication;
+    }
+
+    public void setAuthentication(String authentication) {
+        this.authentication = authentication;
     }
 }

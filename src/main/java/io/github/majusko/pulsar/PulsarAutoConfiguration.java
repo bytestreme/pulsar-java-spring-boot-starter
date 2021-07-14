@@ -2,6 +2,8 @@ package io.github.majusko.pulsar;
 
 import io.github.majusko.pulsar.properties.ConsumerProperties;
 import io.github.majusko.pulsar.properties.PulsarProperties;
+import org.apache.pulsar.client.api.AuthenticationFactory;
+import org.apache.pulsar.client.api.ClientBuilder;
 import org.apache.pulsar.client.api.PulsarClient;
 import org.apache.pulsar.client.api.PulsarClientException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -26,16 +28,21 @@ public class PulsarAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public PulsarClient pulsarClient() throws PulsarClientException {
-        return PulsarClient.builder()
-            .serviceUrl(pulsarProperties.getServiceUrl())
-            .ioThreads(pulsarProperties.getIoThreads())
-            .listenerThreads(pulsarProperties.getListenerThreads())
-            .enableTcpNoDelay(pulsarProperties.isEnableTcpNoDelay())
-            .keepAliveInterval(pulsarProperties.getKeepAliveIntervalSec(), TimeUnit.SECONDS)
-            .connectionTimeout(pulsarProperties.getConnectionTimeoutSec(), TimeUnit.SECONDS)
-            .operationTimeout(pulsarProperties.getOperationTimeoutSec(), TimeUnit.SECONDS)
-            .startingBackoffInterval(pulsarProperties.getStartingBackoffIntervalMs(), TimeUnit.MILLISECONDS)
-            .maxBackoffInterval(pulsarProperties.getMaxBackoffIntervalSec(), TimeUnit.SECONDS)
-            .build();
+        ClientBuilder builder = PulsarClient.builder()
+                .serviceUrl(pulsarProperties.getServiceUrl())
+                .ioThreads(pulsarProperties.getIoThreads())
+                .listenerThreads(pulsarProperties.getListenerThreads())
+                .enableTcpNoDelay(pulsarProperties.isEnableTcpNoDelay())
+                .keepAliveInterval(pulsarProperties.getKeepAliveIntervalSec(), TimeUnit.SECONDS)
+                .connectionTimeout(pulsarProperties.getConnectionTimeoutSec(), TimeUnit.SECONDS)
+                .operationTimeout(pulsarProperties.getOperationTimeoutSec(), TimeUnit.SECONDS)
+                .startingBackoffInterval(pulsarProperties.getStartingBackoffIntervalMs(), TimeUnit.MILLISECONDS)
+                .maxBackoffInterval(pulsarProperties.getMaxBackoffIntervalSec(), TimeUnit.SECONDS);
+
+        if (pulsarProperties.getAuthentication() != null) {
+            builder.authentication(AuthenticationFactory.token(pulsarProperties.getAuthentication()));
+        }
+
+        return builder.build();
     }
 }
