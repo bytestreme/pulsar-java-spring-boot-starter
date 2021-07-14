@@ -28,21 +28,17 @@ public class PulsarAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public PulsarClient pulsarClient() throws PulsarClientException {
-        ClientBuilder builder = PulsarClient.builder()
-                .serviceUrl(pulsarProperties.getServiceUrl())
-                .ioThreads(pulsarProperties.getIoThreads())
-                .listenerThreads(pulsarProperties.getListenerThreads())
-                .enableTcpNoDelay(pulsarProperties.isEnableTcpNoDelay())
-                .keepAliveInterval(pulsarProperties.getKeepAliveIntervalSec(), TimeUnit.SECONDS)
-                .connectionTimeout(pulsarProperties.getConnectionTimeoutSec(), TimeUnit.SECONDS)
-                .operationTimeout(pulsarProperties.getOperationTimeoutSec(), TimeUnit.SECONDS)
-                .startingBackoffInterval(pulsarProperties.getStartingBackoffIntervalMs(), TimeUnit.MILLISECONDS)
-                .maxBackoffInterval(pulsarProperties.getMaxBackoffIntervalSec(), TimeUnit.SECONDS);
-
-        if (pulsarProperties.getAuthentication() != null) {
-            builder.authentication(AuthenticationFactory.token(pulsarProperties.getAuthentication()));
+        if (pulsarProperties.getAuthentication() == null
+                || pulsarProperties.getAuthentication().isEmpty()
+                || pulsarProperties.getServiceUrl() == null
+                || pulsarProperties.getServiceUrl().isEmpty()) {
+            throw new IllegalStateException("provide serviceUrl and authentication");
         }
-
-        return builder.build();
+        return PulsarClient.builder()
+                .serviceUrl(pulsarProperties.getServiceUrl())
+                .authentication(
+                        AuthenticationFactory.token(pulsarProperties.getAuthentication())
+                )
+                .build();
     }
 }
